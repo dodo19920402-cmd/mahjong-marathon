@@ -145,7 +145,7 @@
     finally { busy = false; confirmBtn.disabled = false; }
   };
 
-  if (!window.firebaseConfig || !firebaseConfig.apiKey || !firebaseConfig.databaseURL) {
+ if (typeof firebaseConfig === 'undefined' || !firebaseConfig.apiKey || !firebaseConfig.databaseURL) {
     statusEl.textContent = '尚未填入 Firebase 設定，請先編輯 firebase-config.js。';
     return;
   }
