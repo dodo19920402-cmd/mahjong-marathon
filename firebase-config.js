@@ -2,11 +2,11 @@
 // databaseURL 請使用你的 Realtime Database 網址。
 // 不要放入 Firebase Admin SDK 私密金鑰或服務帳戶 JSON。
 const firebaseConfig = {
-  apiKey: "請填入你的_apiKey",
-  authDomain: "請填入你的_authDomain",
+  apiKey: "AIzaSyDvvR_3rAbme3ja7xXXvZJfQXEkFR5B1xg",
+  authDomain: "project-2489943358274465398.firebaseapp.com",
   databaseURL: "https://project-2489943358274465398-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "請填入你的_projectId",
-  storageBucket: "請填入你的_storageBucket",
-  messagingSenderId: "請填入你的_messagingSenderId",
-  appId: "請填入你的_appId"
+  projectId: "project-2489943358274465398",
+  storageBucket: "project-2489943358274465398.firebasestorage.app",
+  messagingSenderId: "909351872659",
+  appId: "G-QFM8EBH839"
 };
