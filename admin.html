@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>麻將馬拉松｜主辦人管理</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7f6;
+      margin: 0;
+      padding: 30px 16px;
+      color: #263b34;
+    }
+    .card {
+      max-width: 480px;
+      margin: 40px auto;
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 3px 16px #0001;
+    }
+    h2 { color: #176b55; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 13px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 6px 0;
+    }
+    .primary { background: #176b55; color: white; }
+    .secondary { background: #e8eeeb; color: #263b34; }
+    .info {
+      background: #f0f5f2;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+      margin-top: 12px;
+    }
+    #logout { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🔐 麻將馬拉松主辦人管理</h2>
+    <p>請使用主辦人的 Google 帳號登入。</p>
+
+    <button id="login" class="primary">使用 Google 登入</button>
+    <button id="logout" class="secondary">登出</button>
+
+    <div id="status" class="info">尚未登入</div>
+    <div id="account"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const accountEl = document.getElementById('account');
+    const loginBtn = document.getElementById('login');
+    const logoutBtn = document.getElementById('logout');
+
+    if (!window.firebaseConfig) {
+      statusEl.textContent = '找不到 Firebase 設定，請檢查 firebase-config.js。';
+    } else {
+      firebase.initializeApp(window.firebaseConfig);
+
+      const auth = firebase.auth();
+      const provider = new firebase.auth.GoogleAuthProvider();
+
+      loginBtn.onclick = async () => {
+        statusEl.textContent = '正在開啟 Google 登入……';
+
+        try {
+          await auth.signInWithPopup(provider);
+        } catch (error) {
+          statusEl.textContent = '登入失敗：' + error.message;
+        }
+      };
+
+      logoutBtn.onclick = async () => {
+        await auth.signOut();
+      };
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          statusEl.textContent = 'Google 登入成功！請保留以下 UID。';
+          accountEl.innerHTML =
+            '<div class="info"><b>Google 帳號：</b><br>' +
+            (user.email || '') +
+            '<br><br><b>管理者 UID：</b><br>' +
+            user.uid +
+            '</div>';
+
+          loginBtn.style.display = 'none';
+          logoutBtn.style.display = 'inline-block';
+        } else {
+          statusEl.textContent = '尚未登入';
+          accountEl.innerHTML = '';
+          loginBtn.style.display = 'inline-block';
+          logoutBtn.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
