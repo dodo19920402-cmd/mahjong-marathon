@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -6,49 +7,123 @@
   <meta name="theme-color" content="#176b55">
   <title>麻將馬拉松｜輪班報名</title>
   <style>
-    :root { font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif; color:#24312d; background:#f4f7f5; }
+    :root {
+      font-family: system-ui, -apple-system, "Noto Sans TC", sans-serif;
+      color:#24312d;
+      background:#f4f7f5;
+    }
     * { box-sizing:border-box; }
     body { margin:0; }
-    header { background:#176b55; color:white; padding:24px 16px; text-align:center; }
+    header {
+      background:#176b55;
+      color:white;
+      padding:24px 16px;
+      text-align:center;
+    }
     header h1 { margin:0 0 8px; font-size:25px; }
     header p { margin:0; opacity:.9; }
     main { max-width:850px; margin:20px auto; padding:0 14px 40px; }
-    .notice { background:white; border-radius:14px; padding:14px 16px; margin-bottom:16px; box-shadow:0 2px 10px #173d3010; }
+    .notice {
+      background:white;
+      border-radius:14px;
+      padding:14px 16px;
+      margin-bottom:16px;
+      box-shadow:0 2px 10px #173d3010;
+    }
     .status { font-size:14px; color:#52635c; min-height:22px; }
-    .slot { background:white; border-radius:14px; margin:12px 0; padding:15px; box-shadow:0 2px 10px #173d3010; }
-    .slot-head { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:12px; }
+    .slot {
+      background:white;
+      border-radius:14px;
+      margin:12px 0;
+      padding:15px;
+      box-shadow:0 2px 10px #173d3010;
+    }
+    .slot-head {
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      margin-bottom:12px;
+    }
     .slot h2 { margin:0; font-size:17px; }
     .count { font-size:13px; color:#176b55; font-weight:700; white-space:nowrap; }
     .seats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
-    button.seat { border:1px solid #d9e3de; border-radius:10px; background:#f8fbf9; padding:12px 10px; min-height:54px; text-align:left; color:#24312d; font:inherit; cursor:pointer; }
+    button.seat {
+      border:1px solid #d9e3de;
+      border-radius:10px;
+      background:#f8fbf9;
+      padding:12px 10px;
+      min-height:54px;
+      text-align:left;
+      color:#24312d;
+      font:inherit;
+      cursor:pointer;
+    }
     button.seat.empty { border-style:dashed; color:#176b55; }
     button.seat.mine { background:#e7f5ef; border-color:#5ba98b; }
     button.seat:disabled { opacity:.65; cursor:wait; }
     .seat small { display:block; color:#64736d; font-size:12px; margin-top:3px; }
     .foot { color:#64736d; font-size:12px; line-height:1.6; margin-top:18px; }
-    .overlay { position:fixed; inset:0; background:#0008; display:none; align-items:center; justify-content:center; padding:18px; }
-    .dialog { background:white; width:min(100%,390px); border-radius:16px; padding:20px; }
+    .overlay {
+      position:fixed;
+      inset:0;
+      background:#0008;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .dialog {
+      background:white;
+      width:min(100%,390px);
+      border-radius:16px;
+      padding:20px;
+    }
     .dialog h3 { margin:0 0 12px; }
-    input { width:100%; padding:12px; border:1px solid #cbd8d1; border-radius:9px; font:inherit; margin:8px 0 14px; }
+    input {
+      width:100%;
+      padding:12px;
+      border:1px solid #cbd8d1;
+      border-radius:9px;
+      font:inherit;
+      margin:8px 0 14px;
+    }
     .actions { display:flex; gap:9px; }
-    .actions button { flex:1; border:0; border-radius:9px; padding:12px; font:inherit; cursor:pointer; }
+    .actions button {
+      flex:1;
+      border:0;
+      border-radius:9px;
+      padding:12px;
+      font:inherit;
+      cursor:pointer;
+    }
     .primary { background:#176b55; color:white; }
     .secondary { background:#edf2ef; color:#24312d; }
-    @media (min-width:600px) { .seats { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+    @media (min-width:600px) {
+      .seats { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    }
   </style>
 </head>
 <body>
+
 <header>
-  <h1>🀄 麻將馬拉松</h1>
-  <p>12/31 08:00 ～ 1/1 08:00｜每班 2 小時・每班 4 個名額</p>
+  <h1 id="pageTitle">🀄 麻將馬拉松</h1>
+  <p id="pageSubtitle">正在載入活動資訊……</p>
 </header>
+
 <main>
   <section class="notice">
     <strong>選擇空位報名</strong>
     <div class="status" id="status">正在連線……</div>
   </section>
+
   <div id="schedule"></div>
-  <p class="foot">報名後，請使用同一台裝置及瀏覽器管理自己的座位。清除瀏覽器資料或更換裝置，可能會失去原本的匿名身分，屆時請聯絡主辦人協助處理。</p>
+
+  <p class="foot">
+    報名後，請使用同一台裝置及瀏覽器管理自己的座位。
+    清除瀏覽器資料或更換裝置，可能會失去原本的匿名身分，
+    屆時請聯絡主辦人協助處理。
+  </p>
 </main>
 
 <div class="overlay" id="overlay">
@@ -63,11 +138,11 @@
   </div>
 </div>
 
-<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="./firebase-config.js"></script>
+
 <script>
 (() => {
   const statusEl = document.getElementById('status');
@@ -76,6 +151,12 @@
   const nameInput = document.getElementById('personName');
   const confirmBtn = document.getElementById('confirmDialog');
   const cancelBtn = document.getElementById('cancelDialog');
+
+  // 沒有 event 參數時，使用原本的 12/31 活動
+  const params = new URLSearchParams(location.search);
+  const eventId = params.get('event');
+  const isNewEvent = Boolean(eventId);
+
   const periods = [
     ['12/31 08:00','10:00'], ['12/31 10:00','12:00'],
     ['12/31 12:00','14:00'], ['12/31 14:00','16:00'],
@@ -84,26 +165,81 @@
     ['1/1 00:00','02:00'], ['1/1 02:00','04:00'],
     ['1/1 04:00','06:00'], ['1/1 06:00','08:00']
   ];
-  let db, uid, pending = null, busy = false;
 
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  let db, uid, pending = null, busy = false;
+  let shifts = [];
+  let latestData = {};
+
+  function formatTime(value) {
+    const d = new Date(value);
+    const pad = n => String(n).padStart(2, '0');
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+      pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
+
+  function formatShift(shift) {
+    const start = new Date(shift.startAt);
+    const end = new Date(shift.endAt);
+    const pad = n => String(n).padStart(2, '0');
+    const startText = formatTime(shift.startAt);
+    const endText =
+      (start.getFullYear() !== end.getFullYear() ||
+       start.getMonth() !== end.getMonth() ||
+       start.getDate() !== end.getDate())
+        ? formatTime(shift.endAt)
+        : pad(end.getHours()) + ':' + pad(end.getMinutes());
+    return startText + ' ～ ' + endText;
+  }
+
   function render(data) {
-    scheduleEl.innerHTML = periods.map((p,i) => {
-      const slotId = `slot${String(i+1).padStart(2,'0')}`;
-      const seats = data?.[slotId] || {};
+    latestData = data || {};
+
+    if (!shifts.length) {
+      scheduleEl.innerHTML = '<section class="slot">目前尚未設定報名場次。</section>';
+      return;
+    }
+
+    scheduleEl.innerHTML = shifts.map((shift, index) => {
+      const slotId = shift.id;
+      const seats = latestData[slotId] || {};
       const taken = Object.keys(seats).filter(k => seats[k]);
+
       const cells = [1,2,3,4].map(n => {
         const seatId = `seat${n}`;
         const person = seats[seatId];
         const mine = person && person.uid === uid;
-        if (!person) return `<button class="seat empty" data-slot="${slotId}" data-seat="${seatId}">＋ 空位 ${n}<small>點我報名</small></button>`;
-        return `<button class="seat ${mine?'mine':''}" data-slot="${slotId}" data-seat="${seatId}" ${mine?'data-mine="1"':''}>${mine?'★ ':''}${esc(person.name)}<small>${mine?'點我取消':'已報名'}</small></button>`;
+
+        if (!person) {
+          return `<button class="seat empty" data-slot="${slotId}" data-seat="${seatId}">
+            ＋ 空位 ${n}<small>點我報名</small>
+          </button>`;
+        }
+
+        return `<button class="seat ${mine ? 'mine' : ''}"
+          data-slot="${slotId}" data-seat="${seatId}"
+          ${mine ? 'data-mine="1"' : ''}>
+          ${mine ? '★ ' : ''}${esc(person.name || '已報名')}
+          <small>${mine ? '點我取消' : '已報名'}</small>
+        </button>`;
       }).join('');
-      return `<section class="slot"><div class="slot-head"><h2>第 ${i+1} 班｜${p[0]}–${p[1]}</h2><span class="count">${taken.length}/4 人</span></div><div class="seats">${cells}</div></section>`;
+
+      return `<section class="slot">
+        <div class="slot-head">
+          <h2>第 ${index + 1} 班｜${esc(shift.label || formatShift(shift))}</h2>
+          <span class="count">${taken.length}/4 人</span>
+        </div>
+        <div class="seats">${cells}</div>
+      </section>`;
     }).join('');
   }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;',
+      '"':'&quot;', "'":'&#39;'
+    }[c]));
+  }
+
   function showDialog(slot, seat) {
     pending = {slot, seat};
     document.getElementById('dialogTitle').textContent = '填寫報名姓名';
@@ -111,57 +247,173 @@
     overlay.style.display = 'flex';
     nameInput.focus();
   }
-  function hideDialog() { overlay.style.display = 'none'; pending = null; }
+
+  function hideDialog() {
+    overlay.style.display = 'none';
+    pending = null;
+  }
+
+  function slotRef(slot, seat) {
+    if (isNewEvent) {
+      return db.ref(`mahjong/events/${eventId}/slots/${slot}/${seat}`);
+    }
+    return db.ref(`mahjong/slots/${slot}/${seat}`);
+  }
+
   scheduleEl.addEventListener('click', async e => {
     const btn = e.target.closest('button.seat');
     if (!btn || busy) return;
-    const slot = btn.dataset.slot, seat = btn.dataset.seat;
-    const ref = db.ref(`mahjong/slots/${slot}/${seat}`);
+
+    const slot = btn.dataset.slot;
+    const seat = btn.dataset.seat;
+    const ref = slotRef(slot, seat);
+
     if (btn.dataset.mine) {
       if (!confirm('確定要取消這個時段的報名嗎？')) return;
-      busy = true; btn.disabled = true;
+
+      busy = true;
+      btn.disabled = true;
+
       try {
         const snap = await ref.get();
-        if (snap.exists() && snap.val().uid === uid) await ref.remove();
-        else alert('這個座位已經變更，請重新確認。');
-      } catch(err) { alert('取消失敗：' + err.message); }
-      finally { busy = false; }
-    } else if (btn.classList.contains('empty')) showDialog(slot, seat);
+        if (snap.exists() && snap.val().uid === uid) {
+          await ref.remove();
+        } else {
+          alert('這個座位已經變更，請重新確認。');
+        }
+      } catch(err) {
+        alert('取消失敗：' + err.message);
+      } finally {
+        busy = false;
+      }
+    } else if (btn.classList.contains('empty')) {
+      showDialog(slot, seat);
+    }
   });
+
   cancelBtn.onclick = hideDialog;
-  overlay.addEventListener('click', e => { if (e.target === overlay) hideDialog(); });
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) hideDialog();
+  });
+
   confirmBtn.onclick = async () => {
     if (!pending || busy) return;
+
     const name = nameInput.value.trim();
-    if (!name || name.length > 20) { alert('請輸入 1 至 20 個字的姓名。'); return; }
-    const {slot,seat} = pending;
-    busy = true; confirmBtn.disabled = true;
+    if (!name || name.length > 20) {
+      alert('請輸入 1 至 20 個字的姓名。');
+      return;
+    }
+
+    const {slot, seat} = pending;
+    busy = true;
+    confirmBtn.disabled = true;
+
     try {
-      const ref = db.ref(`mahjong/slots/${slot}/${seat}`);
-      const result = await ref.transaction(current => current === null ? {uid, name, createdAt: Date.now()} : undefined);
-      if (!result.committed) alert('不好意思，這個位置剛剛已被其他人報名，請選擇其他空位。');
+      const ref = slotRef(slot, seat);
+      const result = await ref.transaction(current =>
+        current === null ? {uid, name, createdAt: Date.now()} : undefined
+      );
+
+      if (!result.committed) {
+        alert('不好意思，這個位置剛剛已被其他人報名，請選擇其他空位。');
+      }
       hideDialog();
-    } catch(err) { alert('報名失敗：' + err.message); }
-    finally { busy = false; confirmBtn.disabled = false; }
+    } catch(err) {
+      alert('報名失敗：' + err.message);
+    } finally {
+      busy = false;
+      confirmBtn.disabled = false;
+    }
   };
 
- if (typeof firebaseConfig === 'undefined' || !firebaseConfig.apiKey || !firebaseConfig.databaseURL) {
-    statusEl.textContent = '尚未填入 Firebase 設定，請先編輯 firebase-config.js。';
+  function startListening() {
+    if (isNewEvent) {
+      if (!/^[A-Za-z0-9_-]+$/.test(eventId)) {
+        statusEl.textContent = '活動網址不正確，請向主辦人索取正確連結。';
+        return;
+      }
+
+      const eventRef = db.ref(`mahjong/events/${eventId}`);
+
+      eventRef.child('settings').on('value', snap => {
+        const settings = snap.val();
+
+        if (!settings) {
+          statusEl.textContent = '找不到這個活動，請確認報名網址。';
+          scheduleEl.innerHTML = '';
+          return;
+        }
+
+        document.getElementById('pageTitle').textContent =
+          '🀄 ' + (settings.name || '麻將馬拉松');
+
+        document.title = (settings.name || '麻將馬拉松') + '｜輪班報名';
+
+        shifts = Array.isArray(settings.shifts) ? settings.shifts : [];
+        document.getElementById('pageSubtitle').textContent =
+          (settings.startAt ? formatTime(settings.startAt) : '') +
+          ' ～ ' +
+          (settings.endAt ? formatTime(settings.endAt) : '') +
+          '｜每班 2 小時・每班 4 個名額';
+
+        render(latestData);
+      }, err => {
+        statusEl.textContent = '讀取活動設定失敗：' + err.message;
+      });
+
+      eventRef.child('slots').on('value', snap => {
+        latestData = snap.val() || {};
+        render(latestData);
+      }, err => {
+        statusEl.textContent = '讀取報名資料失敗：' + err.message;
+      });
+
+    } else {
+      document.getElementById('pageTitle').textContent = '🀄 麻將馬拉松';
+      document.getElementById('pageSubtitle').textContent =
+        '12/31 08:00 ～ 1/1 08:00｜每班 2 小時・每班 4 個名額';
+
+      shifts = periods.map((p, i) => ({
+        id: `slot${String(i + 1).padStart(2, '0')}`,
+        label: p[0] + ' ～ ' + p[1]
+      }));
+
+      db.ref('mahjong/slots').on('value', snap => {
+        latestData = snap.val() || {};
+        render(latestData);
+      }, err => {
+        statusEl.textContent = '讀取失敗：' + err.message;
+      });
+    }
+
+    statusEl.textContent = '已連線，報名狀況會自動同步更新。';
+  }
+
+  const config = window.firebaseConfig;
+
+  if (!config || !config.apiKey || !config.databaseURL) {
+    statusEl.textContent = '找不到 Firebase 設定，請檢查 firebase-config.js。';
     return;
   }
+
   try {
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(config);
     const auth = firebase.auth();
     db = firebase.database();
+
     auth.onAuthStateChanged(async user => {
       try {
-        if (!user) { await auth.signInAnonymously(); return; }
+        if (!user) {
+          await auth.signInAnonymously();
+          return;
+        }
+
         uid = user.uid;
-        statusEl.textContent = '已連線，報名狀況會自動同步更新。';
-        db.ref('mahjong/slots').on('value', snap => render(snap.val() || {}), err => {
-          statusEl.textContent = '讀取失敗：' + err.message;
-        });
-      } catch(err) { statusEl.textContent = '登入或連線失敗：' + err.message; }
+        startListening();
+      } catch(err) {
+        statusEl.textContent = '登入或連線失敗：' + err.message;
+      }
     });
   } catch(err) {
     statusEl.textContent = 'Firebase 初始化失敗：' + err.message;
