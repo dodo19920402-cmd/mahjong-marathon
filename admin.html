@@ -236,16 +236,39 @@ function toInputTime(value) {
     pad(d.getHours()) + ":" + pad(d.getMinutes());
 }
 
+
 function loadEvents() {
   db.ref("mahjong/events").on("value", snapshot => {
     const data = snapshot.val() || {};
     const list = document.getElementById("eventList");
     list.innerHTML = "";
 
+    // 原本 12/31 活動：保留舊資料，只提供查看功能
+    const legacy = document.createElement("div");
+    legacy.className = "event";
+
+    const legacyTitle = document.createElement("strong");
+    legacyTitle.textContent = "🀄 原本 12/31 麻將馬拉松";
+
+    const legacyInfo = document.createElement("p");
+    legacyInfo.className = "small";
+    legacyInfo.textContent = "12 個場次｜每場 2 小時｜每場 4 個座位｜原始報名資料";
+
+    const legacyButton = document.createElement("button");
+    legacyButton.className = "primary";
+    legacyButton.textContent = "查看原本活動及報名名單";
+    legacyButton.onclick = showLegacy;
+
+    legacy.append(legacyTitle, legacyInfo, legacyButton);
+    list.appendChild(legacy);
+
+    // 新建立的活動
     const ids = Object.keys(data);
 
     if (!ids.length) {
-      list.textContent = "目前還沒有建立新活動。";
+      const empty = document.createElement("p");
+      empty.textContent = "目前還沒有其他新活動。";
+      list.appendChild(empty);
       return;
     }
 
@@ -276,6 +299,97 @@ function loadEvents() {
   }, error => {
     statusEl.textContent = "讀取活動失敗：" + error.message;
   });
+}
+
+
+// 查看原本 12/31 活動，不搬動、不修改舊資料
+async function showLegacy() {
+  const periods = [
+    ["12/31 08:00", "10:00"],
+    ["12/31 10:00", "12:00"],
+    ["12/31 12:00", "14:00"],
+    ["12/31 14:00", "16:00"],
+    ["12/31 16:00", "18:00"],
+    ["12/31 18:00", "20:00"],
+    ["12/31 20:00", "22:00"],
+    ["12/31 22:00", "1/1 00:00"],
+    ["1/1 00:00", "02:00"],
+    ["1/1 02:00", "04:00"],
+    ["1/1 04:00", "06:00"],
+    ["1/1 06:00", "08:00"]
+  ];
+
+  const editor = document.getElementById("editor");
+  editor.style.display = "block";
+
+  document.getElementById("selectedName").textContent =
+    "原本 12/31 麻將馬拉松｜唯讀查看";
+
+  // 隱藏新活動的編輯功能，避免誤改舊活動
+  ["editName", "editStart", "editEnd", "save", "regenerate", "addShift"]
+    .forEach(id => {
+      document.getElementById(id).style.display = "none";
+    });
+
+  const shiftList = document.getElementById("shiftList");
+  shiftList.innerHTML = "正在讀取原本的報名資料……";
+
+  editor.scrollIntoView({ behavior: "smooth" });
+
+  try {
+    const snapshot = await db.ref("mahjong/slots").once("value");
+    const data = snapshot.val() || {};
+
+    shiftList.innerHTML = "";
+
+    periods.forEach((period, index) => {
+      const slotId = "slot" + String(index + 1).padStart(2, "0");
+      const slotData = data[slotId] || {};
+
+      const box = document.createElement("div");
+      box.className = "event";
+
+      const heading = document.createElement("strong");
+      heading.textContent =
+        "第 " + (index + 1) + " 班｜" +
+        period[0] + " ～ " + period[1];
+
+      box.appendChild(heading);
+
+      let count = 0;
+
+      for (let i = 1; i <= 4; i++) {
+        const seat = slotData["seat" + i];
+        const line = document.createElement("p");
+        line.className = "small";
+
+        if (seat) {
+          count++;
+          line.textContent =
+            "座位 " + i + "：" + (seat.name || "已報名");
+        } else {
+          line.textContent = "座位 " + i + "：尚未報名";
+        }
+
+        box.appendChild(line);
+      }
+
+      const summary = document.createElement("p");
+      summary.textContent = "目前報名：" + count + " / 4 人";
+      box.appendChild(summary);
+
+      shiftList.appendChild(box);
+    });
+
+    const note = document.createElement("p");
+    note.className = "small";
+    note.textContent =
+      "以上為原本活動的報名資料，僅供查看，不會修改或搬移。";
+    shiftList.appendChild(note);
+
+  } catch (error) {
+    shiftList.textContent = "讀取失敗：" + error.message;
+  }
 }
 
 document.getElementById("create").onclick = async () => {
@@ -331,6 +445,11 @@ function selectEvent(id, data) {
   const s = data.settings || {};
 
   document.getElementById("editor").style.display = "block";
+    // 切回新活動時，恢復編輯功能
+  ["editName", "editStart", "editEnd", "save", "regenerate", "addShift"]
+    .forEach(id => {
+      document.getElementById(id).style.display = "";
+    });
   document.getElementById("selectedName").textContent =
     "目前管理：" + (s.name || "未命名活動");
 
