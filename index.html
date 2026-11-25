@@ -43,10 +43,19 @@
   <p>12/31 08:00 ～ 1/1 08:00｜每班 2 小時・每班 4 個名額</p>
 </header>
 <main>
-  <section class="notice">
-    <strong>選擇空位報名</strong>
-    <div class="status" id="status">正在連線……</div>
-  </section>
+<section class="notice">
+  <strong>選擇空位報名</strong>
+  <div class="status" id="status">正在連線……</div>
+  <div style="margin-top:12px;">
+    <button id="adminLogin" class="primary" type="button">
+      🔐 主辦人 Google 登入
+    </button>
+    <button id="adminLogout" class="secondary" type="button" style="display:none;">
+      登出管理者
+    </button>
+    <div id="adminStatus" class="status"></div>
+  </div>
+</section>
   <div id="schedule"></div>
   <p class="foot">報名後，請使用同一台裝置及瀏覽器管理自己的座位。清除瀏覽器資料或更換裝置，可能會失去原本的匿名身分，屆時請聯絡主辦人協助處理。</p>
 </main>
@@ -91,17 +100,17 @@
   }
   function render(data) {
     scheduleEl.innerHTML = periods.map((p,i) => {
-      const slotId = `slot${String(i+1).padStart(2,'0')}`;
+      const slotId = slot${String(i+1).padStart(2,'0')};
       const seats = data?.[slotId] || {};
       const taken = Object.keys(seats).filter(k => seats[k]);
       const cells = [1,2,3,4].map(n => {
-        const seatId = `seat${n}`;
+        const seatId = seat${n};
         const person = seats[seatId];
         const mine = person && person.uid === uid;
-        if (!person) return `<button class="seat empty" data-slot="${slotId}" data-seat="${seatId}">＋ 空位 ${n}<small>點我報名</small></button>`;
-        return `<button class="seat ${mine?'mine':''}" data-slot="${slotId}" data-seat="${seatId}" ${mine?'data-mine="1"':''}>${mine?'★ ':''}${esc(person.name)}<small>${mine?'點我取消':'已報名'}</small></button>`;
+        if (!person) return <button class="seat empty" data-slot="${slotId}" data-seat="${seatId}">＋ 空位 ${n}<small>點我報名</small></button>;
+        return <button class="seat ${mine?'mine':''}" data-slot="${slotId}" data-seat="${seatId}" ${mine?'data-mine="1"':''}>${mine?'★ ':''}${esc(person.name)}<small>${mine?'點我取消':'已報名'}</small></button>;
       }).join('');
-      return `<section class="slot"><div class="slot-head"><h2>第 ${i+1} 班｜${p[0]}–${p[1]}</h2><span class="count">${taken.length}/4 人</span></div><div class="seats">${cells}</div></section>`;
+      return <section class="slot"><div class="slot-head"><h2>第 ${i+1} 班｜${p[0]}–${p[1]}</h2><span class="count">${taken.length}/4 人</span></div><div class="seats">${cells}</div></section>;
     }).join('');
   }
   function showDialog(slot, seat) {
@@ -116,7 +125,7 @@
     const btn = e.target.closest('button.seat');
     if (!btn || busy) return;
     const slot = btn.dataset.slot, seat = btn.dataset.seat;
-    const ref = db.ref(`mahjong/slots/${slot}/${seat}`);
+    const ref = db.ref(mahjong/slots/${slot}/${seat});
     if (btn.dataset.mine) {
       if (!confirm('確定要取消這個時段的報名嗎？')) return;
       busy = true; btn.disabled = true;
@@ -137,7 +146,7 @@
     const {slot,seat} = pending;
     busy = true; confirmBtn.disabled = true;
     try {
-      const ref = db.ref(`mahjong/slots/${slot}/${seat}`);
+      const ref = db.ref(mahjong/slots/${slot}/${seat});
       const result = await ref.transaction(current => current === null ? {uid, name, createdAt: Date.now()} : undefined);
       if (!result.committed) alert('不好意思，這個位置剛剛已被其他人報名，請選擇其他空位。');
       hideDialog();
@@ -153,6 +162,30 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     db = firebase.database();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+    const adminLoginBtn = document.getElementById('adminLogin');
+    const adminStatus = document.getElementById('adminStatus');
+
+    adminLoginBtn.onclick = async () => {
+      const user = auth.currentUser;
+
+      if (!user) {
+        adminStatus.textContent = '請稍候，系統正在建立登入身分。';
+        return;
+      }
+
+      if (!user.isAnonymous) {
+        adminStatus.textContent = 'Google 帳號已經連結。';
+        return;
+      }
+
+      try {
+        await user.linkWithPopup(googleProvider);
+        adminStatus.textContent = 'Google 帳號連結成功！';
+      } catch (err) {
+        adminStatus.textContent = '登入失敗：' + err.message;
+      }
+    };
     auth.onAuthStateChanged(async user => {
       try {
         if (!user) { await auth.signInAnonymously(); return; }
