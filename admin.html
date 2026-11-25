@@ -1,110 +1,506 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>麻將馬拉松｜主辦人管理</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7f6;
-      margin: 0;
-      padding: 30px 16px;
-      color: #263b34;
-    }
-    .card {
-      max-width: 480px;
-      margin: 40px auto;
-      background: white;
-      padding: 28px;
-      border-radius: 16px;
-      box-shadow: 0 3px 16px #0001;
-    }
-    h2 { color: #176b55; }
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 13px 20px;
-      cursor: pointer;
-      font-size: 16px;
-      margin: 6px 0;
-    }
-    .primary { background: #176b55; color: white; }
-    .secondary { background: #e8eeeb; color: #263b34; }
-    .info {
-      background: #f0f5f2;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-wrap: anywhere;
-      margin-top: 12px;
-    }
-    #logout { display: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麻將馬拉松｜活動管理</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+  background: #f3f6f4;
+  color: #263b34;
+  margin: 0;
+  padding: 20px 14px 50px;
+}
+.card {
+  max-width: 760px;
+  margin: 16px auto;
+  padding: 22px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 3px 14px #0001;
+}
+h2 { color: #176b55; margin-top: 0; }
+h3 { color: #176b55; margin-bottom: 12px; }
+label {
+  display: block;
+  font-weight: bold;
+  margin: 14px 0 6px;
+}
+input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #ccd8d1;
+  border-radius: 7px;
+  font-size: 16px;
+}
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  margin: 8px 5px 0 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+.primary { background: #176b55; color: white; }
+.secondary { background: #e8eeeb; color: #263b34; }
+.danger { background: #fbe9e7; color: #a32c20; }
+.info {
+  background: #eef5f1;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.event {
+  border: 1px solid #dce5df;
+  border-radius: 9px;
+  padding: 14px;
+  margin: 10px 0;
+}
+.small { color: #65766d; font-size: 14px; }
+.shift {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #edf0ee;
+  padding: 9px 0;
+}
+.shift button { margin: 0; }
+#main { display: none; }
+</style>
 </head>
 <body>
+
+<div class="card">
+  <h2>🀄 麻將馬拉松｜主辦人管理</h2>
+  <p>請使用主辦人的 Google 帳號登入。</p>
+  <button id="login" class="primary">使用 Google 登入</button>
+  <button id="logout" class="secondary" style="display:none">登出</button>
+  <div id="status" class="info">尚未登入</div>
+</div>
+
+<div id="main">
+
   <div class="card">
-    <h2>🔐 麻將馬拉松主辦人管理</h2>
-    <p>請使用主辦人的 Google 帳號登入。</p>
+    <h2>➕ 建立新活動</h2>
 
-    <button id="login" class="primary">使用 Google 登入</button>
-    <button id="logout" class="secondary">登出</button>
+    <label>活動名稱</label>
+    <input id="newName" placeholder="例如：2027 麻將馬拉松">
 
-    <div id="status" class="info">尚未登入</div>
-    <div id="account"></div>
+    <label>活動開始日期及時間</label>
+    <input id="newStart" type="datetime-local">
+
+    <label>活動結束日期及時間</label>
+    <input id="newEnd" type="datetime-local">
+
+    <p class="small">系統會依開始及結束時間，自動每 2 小時建立一個場次，每場 4 個座位。未滿 2 小時的尾段不會自動建立場次。</p>
+
+    <button id="create" class="primary">建立活動</button>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <div class="card">
+    <h2>📋 已建立的活動</h2>
+    <div id="eventList">讀取中……</div>
+  </div>
 
-  <script>
-    const statusEl = document.getElementById('status');
-    const accountEl = document.getElementById('account');
-    const loginBtn = document.getElementById('login');
-    const logoutBtn = document.getElementById('logout');
+  <div class="card" id="editor" style="display:none">
+    <h2>✏️ 活動設定</h2>
+    <div id="selectedName" class="info"></div>
 
-    if (!window.firebaseConfig) {
-      statusEl.textContent = '找不到 Firebase 設定，請檢查 firebase-config.js。';
-    } else {
-      firebase.initializeApp(window.firebaseConfig);
+    <label>活動名稱</label>
+    <input id="editName">
 
-      const auth = firebase.auth();
-      const provider = new firebase.auth.GoogleAuthProvider();
+    <label>活動開始日期及時間</label>
+    <input id="editStart" type="datetime-local">
 
-      loginBtn.onclick = async () => {
-        statusEl.textContent = '正在開啟 Google 登入……';
+    <label>活動結束日期及時間</label>
+    <input id="editEnd" type="datetime-local">
 
-        try {
-          await auth.signInWithPopup(provider);
-        } catch (error) {
-          statusEl.textContent = '登入失敗：' + error.message;
-        }
-      };
+    <button id="save" class="primary">儲存活動設定</button>
+    <button id="regenerate" class="secondary">依新日期重新產生場次</button>
 
-      logoutBtn.onclick = async () => {
-        await auth.signOut();
-      };
+    <hr style="border:0;border-top:1px solid #e5ebe7;margin:22px 0">
 
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          statusEl.textContent = 'Google 登入成功！請保留以下 UID。';
-          accountEl.innerHTML =
-            '<div class="info"><b>Google 帳號：</b><br>' +
-            (user.email || '') +
-            '<br><br><b>管理者 UID：</b><br>' +
-            user.uid +
-            '</div>';
+    <h3>場次管理</h3>
+    <p class="small">每個場次固定 2 小時、4 個座位。刪除場次前會先檢查是否有人報名。</p>
+    <div id="shiftList"></div>
+    <button id="addShift" class="primary">＋ 手動新增一個場次</button>
+  </div>
 
-          loginBtn.style.display = 'none';
-          logoutBtn.style.display = 'inline-block';
-        } else {
-          statusEl.textContent = '尚未登入';
-          accountEl.innerHTML = '';
-          loginBtn.style.display = 'inline-block';
-          logoutBtn.style.display = 'none';
-        }
-      });
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+const ADMIN_UID = "4fanO8HQ53dsrwIW8OqaeUbxNw62";
+
+const statusEl = document.getElementById("status");
+const loginBtn = document.getElementById("login");
+const logoutBtn = document.getElementById("logout");
+const main = document.getElementById("main");
+
+let auth;
+let db;
+let currentEventId = null;
+let currentEvent = null;
+
+if (!window.firebaseConfig) {
+  statusEl.textContent = "找不到 Firebase 設定，請檢查 firebase-config.js。";
+} else {
+  firebase.initializeApp(window.firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.database();
+
+  loginBtn.onclick = async () => {
+    statusEl.textContent = "正在開啟 Google 登入……";
+    try {
+      await auth.signInWithPopup(
+        new firebase.auth.GoogleAuthProvider()
+      );
+    } catch (error) {
+      statusEl.textContent = "登入失敗：" + error.message;
     }
-  </script>
+  };
+
+  logoutBtn.onclick = () => auth.signOut();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      statusEl.textContent = "尚未登入";
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      main.style.display = "none";
+      return;
+    }
+
+    if (user.uid !== ADMIN_UID) {
+      statusEl.textContent =
+        "此 Google 帳號沒有管理權限，請登出並使用主辦人帳號。";
+      main.style.display = "none";
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      return;
+    }
+
+    statusEl.textContent =
+      "管理者登入成功：" + (user.email || "") +
+      "。你可以開始管理新活動。";
+
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    main.style.display = "block";
+    loadEvents();
+  });
+}
+
+function makeShifts(start, end) {
+  const shifts = [];
+  let time = start;
+  let number = 1;
+
+  while (time + 2 * 60 * 60 * 1000 <= end) {
+    shifts.push({
+      id: "slot" + String(number).padStart(2, "0"),
+      startAt: time,
+      endAt: time + 2 * 60 * 60 * 1000
+    });
+    time += 2 * 60 * 60 * 1000;
+    number++;
+  }
+  return shifts;
+}
+
+function formatTime(value) {
+  return new Date(value).toLocaleString("zh-TW", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+}
+
+function toInputTime(value) {
+  const d = new Date(value);
+  const pad = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" +
+    pad(d.getMonth() + 1) + "-" +
+    pad(d.getDate()) + "T" +
+    pad(d.getHours()) + ":" + pad(d.getMinutes());
+}
+
+function loadEvents() {
+  db.ref("mahjong/events").on("value", snapshot => {
+    const data = snapshot.val() || {};
+    const list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    const ids = Object.keys(data);
+
+    if (!ids.length) {
+      list.textContent = "目前還沒有建立新活動。";
+      return;
+    }
+
+    ids.forEach(id => {
+      const settings = data[id].settings || {};
+      const item = document.createElement("div");
+      item.className = "event";
+
+      const title = document.createElement("strong");
+      title.textContent = settings.name || "未命名活動";
+
+      const detail = document.createElement("p");
+      detail.className = "small";
+      detail.textContent =
+        (settings.startAt ? formatTime(settings.startAt) : "未設定開始時間") +
+        " ～ " +
+        (settings.endAt ? formatTime(settings.endAt) : "未設定結束時間") +
+        "｜場次：" + ((settings.shifts || []).length);
+
+      const btn = document.createElement("button");
+      btn.className = "primary";
+      btn.textContent = "管理此活動";
+      btn.onclick = () => selectEvent(id, data[id]);
+
+      item.append(title, detail, btn);
+      list.appendChild(item);
+    });
+  }, error => {
+    statusEl.textContent = "讀取活動失敗：" + error.message;
+  });
+}
+
+document.getElementById("create").onclick = async () => {
+  const name = document.getElementById("newName").value.trim();
+  const start = new Date(document.getElementById("newStart").value).getTime();
+  const end = new Date(document.getElementById("newEnd").value).getTime();
+
+  if (!name) return alert("請輸入活動名稱。");
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return alert("請確認活動開始及結束時間。");
+  }
+
+  const shifts = makeShifts(start, end);
+  if (!shifts.length) {
+    return alert("活動時間至少需要 2 小時，才能建立場次。");
+  }
+
+  if (!confirm("確定建立「" + name + "」？共會建立 " + shifts.length + " 個場次。")) {
+    return;
+  }
+
+  try {
+    const ref = db.ref("mahjong/events").push();
+    await ref.set({
+      settings: {
+        name,
+        startAt: start,
+        endAt: end,
+        shiftHours: 2,
+        seatsPerShift: 4,
+        shifts
+      }
+    });
+
+    alert("活動建立成功！");
+    document.getElementById("newName").value = "";
+    document.getElementById("newStart").value = "";
+    document.getElementById("newEnd").value = "";
+    selectEvent(ref.key, {
+      settings: {
+        name, startAt: start, endAt: end,
+        shiftHours: 2, seatsPerShift: 4, shifts
+      }
+    });
+  } catch (error) {
+    alert("建立失敗：" + error.message);
+  }
+};
+
+function selectEvent(id, data) {
+  currentEventId = id;
+  currentEvent = data;
+  const s = data.settings || {};
+
+  document.getElementById("editor").style.display = "block";
+  document.getElementById("selectedName").textContent =
+    "目前管理：" + (s.name || "未命名活動");
+
+  document.getElementById("editName").value = s.name || "";
+  document.getElementById("editStart").value = toInputTime(s.startAt);
+  document.getElementById("editEnd").value = toInputTime(s.endAt);
+
+  renderShifts(s.shifts || []);
+  document.getElementById("editor").scrollIntoView({behavior:"smooth"});
+}
+
+function renderShifts(shifts) {
+  const list = document.getElementById("shiftList");
+  list.innerHTML = "";
+
+  if (!shifts.length) {
+    list.textContent = "目前沒有場次。";
+    return;
+  }
+
+  shifts.forEach(shift => {
+    const row = document.createElement("div");
+    row.className = "shift";
+
+    const label = document.createElement("span");
+    label.textContent =
+      shift.id + "｜" + formatTime(shift.startAt) +
+      " ～ " + formatTime(shift.endAt);
+
+    const btn = document.createElement("button");
+    btn.className = "danger";
+    btn.textContent = "刪除";
+    btn.onclick = () => deleteShift(shift.id);
+
+    row.append(label, btn);
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("save").onclick = async () => {
+  if (!currentEventId) return;
+
+  const name = document.getElementById("editName").value.trim();
+  const start = new Date(document.getElementById("editStart").value).getTime();
+  const end = new Date(document.getElementById("editEnd").value).getTime();
+
+  if (!name) return alert("請輸入活動名稱。");
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return alert("請確認活動開始及結束時間。");
+  }
+
+  try {
+    await db.ref("mahjong/events/" + currentEventId + "/settings").update({
+      name, startAt: start, endAt: end
+    });
+    alert("活動設定已儲存！");
+  } catch (error) {
+    alert("儲存失敗：" + error.message);
+  }
+};
+
+document.getElementById("regenerate").onclick = async () => {
+  if (!currentEventId) return;
+
+  const start = new Date(document.getElementById("editStart").value).getTime();
+  const end = new Date(document.getElementById("editEnd").value).getTime();
+
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return alert("請確認活動開始及結束時間。");
+  }
+
+  const snapshot = await db.ref(
+    "mahjong/events/" + currentEventId + "/slots"
+  ).once("value");
+
+  if (snapshot.exists()) {
+    return alert(
+      "這個活動已有報名資料，為避免影響參加者，暫時不能重新產生場次。\n" +
+      "請保留原場次，或先建立一個新活動。"
+    );
+  }
+
+  const shifts = makeShifts(start, end);
+  if (!shifts.length) return alert("活動時間至少需要 2 小時。");
+
+  if (!confirm("確定依照目前日期重新產生場次？")) return;
+
+  try {
+    await db.ref("mahjong/events/" + currentEventId + "/settings").update({
+      startAt: start,
+      endAt: end,
+      shifts
+    });
+    alert("場次已重新產生！");
+  } catch (error) {
+    alert("操作失敗：" + error.message);
+  }
+};
+
+document.getElementById("addShift").onclick = async () => {
+  if (!currentEventId) return;
+
+  const shifts = (currentEvent.settings.shifts || []).slice();
+  const used = shifts.map(s => s.id);
+  let number = 1;
+  let id;
+
+  do {
+    id = "slot" + String(number).padStart(2, "0");
+    number++;
+  } while (used.includes(id));
+
+  const lastEnd = shifts.length
+    ? Math.max(...shifts.map(s => s.endAt))
+    : currentEvent.settings.startAt;
+
+  const newShift = {
+    id,
+    startAt: lastEnd,
+    endAt: lastEnd + 2 * 60 * 60 * 1000
+  };
+
+  if (!confirm(
+    "確定新增場次？\n" +
+    formatTime(newShift.startAt) + " ～ " +
+    formatTime(newShift.endAt)
+  )) return;
+
+  shifts.push(newShift);
+  shifts.sort((a,b) => a.startAt - b.startAt);
+
+  try {
+    await db.ref("mahjong/events/" + currentEventId + "/settings/shifts").set(shifts);
+    currentEvent.settings.shifts = shifts;
+    renderShifts(shifts);
+    alert("已新增場次！");
+  } catch (error) {
+    alert("新增失敗：" + error.message);
+  }
+};
+
+async function deleteShift(slotId) {
+  if (!currentEventId) return;
+
+  const slotRef = db.ref(
+    "mahjong/events/" + currentEventId + "/slots/" + slotId
+  );
+
+  try {
+    const snapshot = await slotRef.once("value");
+    if (snapshot.exists()) {
+      return alert("這個場次已有報名資料，為保護參加者的報名紀錄，不能刪除。");
+    }
+
+    if (!confirm("確定刪除場次 " + slotId + "？")) return;
+
+    const shifts = (currentEvent.settings.shifts || [])
+      .filter(s => s.id !== slotId);
+
+    await db.ref(
+      "mahjong/events/" + currentEventId + "/settings/shifts"
+    ).set(shifts);
+
+    currentEvent.settings.shifts = shifts;
+    renderShifts(shifts);
+    alert("場次已刪除。");
+  } catch (error) {
+    alert("刪除失敗：" + error.message);
+  }
+}
+</script>
 </body>
 </html>
